@@ -1,0 +1,35 @@
+<?php
+
+// Messages de validation en français (sous-ensemble utilisé par MeriMap).
+return [
+    'accepted' => 'Le champ :attribute doit être accepté.',
+    'after_or_equal' => 'Le champ :attribute doit être une date postérieure ou égale à :date.',
+    'alpha_dash' => 'Le champ :attribute ne doit contenir que des lettres, chiffres, tirets et soulignés.',
+    'array' => 'Le champ :attribute doit être une liste.',
+    'between' => ['numeric' => 'Le champ :attribute doit être compris entre :min et :max.', 'string' => 'Le champ :attribute doit contenir entre :min et :max caractères.'],
+    'boolean' => 'Le champ :attribute doit être vrai ou faux.',
+    'confirmed' => 'La confirmation du champ :attribute ne correspond pas.',
+    'current_password' => 'Le mot de passe est incorrect.',
+    'date' => 'Le champ :attribute n\'est pas une date valide.',
+    'email' => 'Le champ :attribute doit être une adresse e-mail valide.',
+    'enum' => 'La valeur choisie pour :attribute est invalide.',
+    'exists' => 'La valeur choisie pour :attribute n\'existe pas.',
+    'in' => 'La valeur choisie pour :attribute est invalide.',
+    'integer' => 'Le champ :attribute doit être un nombre entier.',
+    'ip' => 'Le champ :attribute doit être une adresse IP valide.',
+    'lowercase' => 'Le champ :attribute doit être en minuscules.',
+    'max' => ['array' => 'Le champ :attribute ne doit pas contenir plus de :max éléments.', 'numeric' => 'Le champ :attribute ne doit pas dépasser :max.', 'string' => 'Le champ :attribute ne doit pas dépasser :max caractères.'],
+    'min' => ['array' => 'Le champ :attribute doit contenir au moins :min éléments.', 'numeric' => 'Le champ :attribute doit être au moins :min.', 'string' => 'Le champ :attribute doit contenir au moins :min caractères.'],
+    'not_in' => 'La valeur choisie pour :attribute est invalide.',
+    'numeric' => 'Le champ :attribute doit être un nombre.',
+    'regex' => 'Le format du champ :attribute est invalide.',
+    'required' => 'Le champ :attribute est obligatoire.',
+    'string' => 'Le champ :attribute doit être du texte.',
+    'unique' => 'Cette valeur de :attribute est déjà utilisée.',
+    'url' => 'Le champ :attribute doit être une URL valide.',
+    'attributes' => [
+        'name' => 'nom', 'email' => 'e-mail', 'password' => 'mot de passe', 'code' => 'code', 'version' => 'version',
+        'category' => 'catégorie', 'kind' => 'type', 'end_of_support_at' => 'fin de support', 'end_of_life_at' => 'fin de vie',
+        'website' => 'site web', 'description' => 'description', 'port' => 'port',
+    ],
+];
