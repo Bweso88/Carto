@@ -165,7 +165,7 @@ const exportUrl = computed(
                                 />
                             </th>
                             <th class="px-4 py-2.5 font-medium uppercase">
-                                Domaine
+                                Domaines
                             </th>
                             <th class="px-4 py-2.5 font-medium uppercase">
                                 Resp. technique
@@ -217,7 +217,20 @@ const exportUrl = computed(
                                 <EnumBadge :value="a.type" />
                             </td>
                             <td class="px-4 py-2.5 text-sm">
-                                {{ a.business_domain?.name ?? '—' }}
+                                <div
+                                    v-if="a.business_domains?.length"
+                                    class="flex max-w-56 flex-wrap gap-1"
+                                >
+                                    <ToneBadge
+                                        v-for="d in a.business_domains"
+                                        :key="d.id"
+                                        tone="neutral"
+                                        >{{ d.name }}</ToneBadge
+                                    >
+                                </div>
+                                <span v-else class="text-muted-foreground/60"
+                                    >—</span
+                                >
                             </td>
                             <td class="px-4 py-2.5 text-sm">
                                 <span v-if="a.technical_owner">{{

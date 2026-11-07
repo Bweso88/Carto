@@ -37,6 +37,7 @@ class ServerController extends Controller
                 ...CmdbOptions::enums(),
                 'environments' => CmdbOptions::environments(),
                 'sites' => CmdbOptions::sites(),
+                'businessDomains' => CmdbOptions::businessDomains(),
             ],
         ]);
     }
@@ -87,19 +88,28 @@ class ServerController extends Controller
             ->loadCount(['deployments', 'guests']);
 
         $deployments = $server->deployments()
-            ->with(['application', 'environment'])
+            ->with(['application.businessDomains', 'environment'])
             ->get()
+            ->filter(fn ($d) => $d->application !== null);
+
+        $domains = $deployments->flatMap(fn ($d) => $d->application->businessDomains)
+            ->unique('id')->sortBy('name')->map->only('id', 'name')->values();
+
+        $deployments = $deployments
+            ->values()
             ->map(fn ($d) => [
                 'id' => $d->id,
                 'role' => ['value' => $d->role->value, 'label' => $d->role->label()],
                 'environment' => $d->environment?->only('code', 'name'),
                 'application' => $d->application->only('id', 'code', 'name'),
+                'domains' => $d->application->businessDomains->pluck('name')->all(),
                 'criticality' => $d->application->criticality ? ['value' => $d->application->criticality->value, 'label' => $d->application->criticality->label()] : null,
             ]);
 
         return Inertia::render('servers/Show', [
             'server' => ServerResource::make($server)->resolve(),
             'deployments' => $deployments,
+            'domains' => $domains,
         ]);
     }
 
@@ -150,7 +160,7 @@ class ServerController extends Controller
     /** @return array<string, string|null> */
     private function filters(Request $request): array
     {
-        return $request->only(['search', 'kind', 'status', 'criticality', 'environment', 'site', 'sort']);
+        return $request->only(['search', 'kind', 'status', 'criticality', 'environment', 'site', 'domain', 'sort']);
     }
 
     /** @return Builder<Server> */
@@ -167,6 +177,8 @@ class ServerController extends Controller
             ->when($f['criticality'] ?? null, fn ($q, $v) => $v === 'none' ? $q->whereNull('criticality') : $q->where('criticality', $v))
             ->when($f['environment'] ?? null, fn ($q, $v) => $q->where('environment_id', $v))
             ->when($f['site'] ?? null, fn ($q, $v) => $q->where('site_id', $v))
+            // Serveurs qui hébergent au moins une application de ce domaine
+            ->when($f['domain'] ?? null, fn ($q, $v) => $q->whereHas('deployments.application.businessDomains', fn ($d) => $d->where('business_domains.id', $v)))
             ->orderBy($column, str_starts_with($sort, '-') ? 'desc' : 'asc')
             ->orderBy('id');
     }

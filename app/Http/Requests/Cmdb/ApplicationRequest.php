@@ -27,7 +27,8 @@ class ApplicationRequest extends FormRequest
             'criticality' => ['nullable', Rule::enum(Criticality::class)],
             'data_classification' => ['nullable', Rule::enum(DataClassification::class)],
             'handles_personal_data' => ['boolean'],
-            'business_domain_id' => ['nullable', 'exists:business_domains,id'],
+            'business_domain_ids' => ['array'],
+            'business_domain_ids.*' => ['integer', 'distinct', 'exists:business_domains,id'],
             'vendor_id' => ['nullable', 'exists:vendors,id'],
             'business_owner_team_id' => ['nullable', 'exists:teams,id'],
             'technical_owner_team_id' => ['nullable', 'exists:teams,id'],
@@ -46,7 +47,7 @@ class ApplicationRequest extends FormRequest
     {
         return [
             'name' => 'nom', 'type' => 'type', 'lifecycle_status' => 'cycle de vie', 'criticality' => 'criticité',
-            'data_classification' => 'classification', 'business_domain_id' => 'domaine métier', 'vendor_id' => 'éditeur',
+            'data_classification' => 'classification', 'business_domain_ids.*' => 'domaine métier', 'vendor_id' => 'éditeur',
             'business_owner_team_id' => 'responsable métier', 'technical_owner_team_id' => 'responsable technique',
             'user_count' => 'nombre d\'utilisateurs', 'sla_target' => 'SLA', 'rto_minutes' => 'RTO', 'rpo_minutes' => 'RPO',
             'documentation_url' => 'lien de documentation',

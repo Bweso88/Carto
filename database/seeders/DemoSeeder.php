@@ -74,11 +74,17 @@ class DemoSeeder extends Seeder
         // --- Domaines métier ---
         $commerce = BusinessDomain::firstOrCreate(['name' => 'E-commerce'])->id;
         $fin = BusinessDomain::firstOrCreate(['name' => 'Finance'])->id;
+        $compta = BusinessDomain::firstOrCreate(['name' => 'Comptabilité'])->id;
+        $achats = BusinessDomain::firstOrCreate(['name' => 'Achats & Logistique'])->id;
         $si = BusinessDomain::firstOrCreate(['name' => 'Infrastructure & Sécurité'])->id;
 
         // --- Applications ---
+        // Une application peut servir plusieurs domaines métier : clé « domains » des attributs
         $app = function (string $name, array $attrs, array $deploy, array $technologies = []) use ($prod) {
+            $domains = $attrs['domains'] ?? [];
+            unset($attrs['domains']);
             $a = Application::updateOrCreate(['name' => $name], $attrs);
+            $a->businessDomains()->syncWithoutDetaching($domains);
             foreach ($deploy as [$srv, $role]) {
                 $a->deployments()->updateOrCreate(
                     ['server_id' => $srv->id, 'role' => $role],
@@ -90,19 +96,19 @@ class DemoSeeder extends Seeder
             return $a;
         };
 
-        $ad = $app('Active Directory', ['type' => Type::Technical, 'criticality' => Crit::Critical, 'business_domain_id' => $si, 'technical_owner_team_id' => $secops->id, 'vendor_id' => Vendor::where('name', 'Microsoft')->value('id')], [[$adServer, Role::Application]]);
-        $sso = $app('SSO Identity Gateway', ['type' => Type::Technical, 'criticality' => Crit::Critical, 'business_domain_id' => $si, 'description' => 'Fédération OIDC / SAML2, MFA', 'technical_owner_team_id' => $secops->id, 'sla_target' => 99.99], [[$web2, Role::Application]]);
-        $orders = $app('Service Commandes & Panier', ['criticality' => Crit::Critical, 'business_domain_id' => $commerce, 'technical_owner_team_id' => $sre->id, 'business_owner_team_id' => $digital->id, 'handles_personal_data' => true, 'data_classification' => DataClassification::Confidential, 'sla_target' => 99.95, 'rto_minutes' => 15, 'rpo_minutes' => 1],
+        $ad = $app('Active Directory', ['type' => Type::Technical, 'criticality' => Crit::Critical, 'domains' => [$si], 'technical_owner_team_id' => $secops->id, 'vendor_id' => Vendor::where('name', 'Microsoft')->value('id')], [[$adServer, Role::Application]]);
+        $sso = $app('SSO Identity Gateway', ['type' => Type::Technical, 'criticality' => Crit::Critical, 'domains' => [$si], 'description' => 'Fédération OIDC / SAML2, MFA', 'technical_owner_team_id' => $secops->id, 'sla_target' => 99.99], [[$web2, Role::Application]]);
+        $orders = $app('Service Commandes & Panier', ['criticality' => Crit::Critical, 'domains' => [$commerce, $achats], 'technical_owner_team_id' => $sre->id, 'business_owner_team_id' => $digital->id, 'handles_personal_data' => true, 'data_classification' => DataClassification::Confidential, 'sla_target' => 99.95, 'rto_minutes' => 15, 'rpo_minutes' => 1],
             [[$app1, Role::Application], [$db1, Role::Database]], [$tech(Cat::Language, 'Java', '21'), $tech(Cat::Database, 'PostgreSQL', '16')]);
-        $shop = $app('Plateforme E-Commerce Core', ['criticality' => Crit::Critical, 'business_domain_id' => $commerce, 'description' => 'Catalogue produits, panier et checkout', 'technical_owner_team_id' => $sre->id, 'business_owner_team_id' => $digital->id, 'handles_personal_data' => true, 'sla_target' => 99.99, 'user_base' => 'Clients web et mobile', 'user_count' => 18500],
+        $shop = $app('Plateforme E-Commerce Core', ['criticality' => Crit::Critical, 'domains' => [$commerce], 'description' => 'Catalogue produits, panier et checkout', 'technical_owner_team_id' => $sre->id, 'business_owner_team_id' => $digital->id, 'handles_personal_data' => true, 'sla_target' => 99.99, 'user_base' => 'Clients web et mobile', 'user_count' => 18500],
             [[$web1, Role::Web], [$web2, Role::Web]], [$tech(Cat::Language, 'JavaScript / TypeScript')]);
-        $payment = $app('Passerelle Paiement & Billing', ['criticality' => Crit::Critical, 'business_domain_id' => $fin, 'description' => 'Gateway PCI-DSS de tokenisation, routage SEPA / CB', 'technical_owner_team_id' => $secops->id, 'business_owner_team_id' => $finance->id, 'data_classification' => DataClassification::Secret, 'sla_target' => 99.99],
+        $payment = $app('Passerelle Paiement & Billing', ['criticality' => Crit::Critical, 'domains' => [$fin, $commerce], 'description' => 'Gateway PCI-DSS de tokenisation, routage SEPA / CB', 'technical_owner_team_id' => $secops->id, 'business_owner_team_id' => $finance->id, 'data_classification' => DataClassification::Secret, 'sla_target' => 99.99],
             [[$app1, Role::Application]], [$tech(Cat::Language, 'Java', '21')]);
-        $erpApp = $app('ERP SAP S/4HANA', ['criticality' => Crit::Critical, 'business_domain_id' => $fin, 'vendor_id' => $sap, 'description' => 'Stocks, facturation groupe et comptabilité', 'business_owner_team_id' => $finance->id, 'sla_target' => 99.9],
+        $erpApp = $app('ERP SAP S/4HANA', ['criticality' => Crit::Critical, 'domains' => [$fin, $compta, $achats], 'vendor_id' => $sap, 'description' => 'Stocks, facturation groupe et comptabilité', 'business_owner_team_id' => $finance->id, 'sla_target' => 99.9],
             [[$erp, Role::Application]]);
-        $backoffice = $app('Back-office historique', ['criticality' => Crit::Medium, 'business_domain_id' => $commerce, 'description' => 'Application legacy à migrer'],
+        $backoffice = $app('Back-office historique', ['criticality' => Crit::Medium, 'domains' => [$commerce], 'description' => 'Application legacy à migrer'],
             [[$legacy, Role::Application], [$mysql, Role::Database]], [$tech(Cat::Language, 'PHP', '7.4'), $tech(Cat::Database, 'MySQL', '5.7')]);
-        $billingBatch = $app('Facturation récurrente', ['criticality' => Crit::High, 'business_domain_id' => $fin, 'business_owner_team_id' => $finance->id],
+        $billingBatch = $app('Facturation récurrente', ['criticality' => Crit::High, 'domains' => [$fin, $compta], 'business_owner_team_id' => $finance->id],
             [[$app1, Role::Batch]]);
 
         // --- Flux : source consomme cible ---

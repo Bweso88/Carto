@@ -96,7 +96,7 @@ erDiagram
     applications }o--o{ technologies : "pile technique"
     applications ||--o{ application_flows : "consomme (source)"
     applications ||--o{ application_flows : "est consommée (cible)"
-    applications }o--o| business_domains : ""
+    applications }o--o{ business_domains : "utilisée par (plusieurs directions)"
     applications }o--o| vendors : "éditeur"
     applications }o--o| teams : "responsables métier / technique"
     technologies }o--o| vendors : ""
@@ -109,6 +109,8 @@ Différences clés avec Kerberos :
 - **Hiérarchie physique** : une VM connaît son hyperviseur.
 - **Cycle de vie** : chaque technologie (OS, moteur BDD, langage) porte ses dates de fin de support / fin de vie.
   Les dates du `ReferenceSeeder` sont indicatives : à faire valider avant un audit.
+- **Domaines métier multiples** : une application peut servir plusieurs directions (ex. Finance et Comptabilité) ;
+  un serveur sert les domaines de toutes les applications qu'il héberge (filtre « domaine » sur la liste des serveurs).
 - **Gouvernance** : criticité (Tier 1 à 4), classification des données, données personnelles (RGPD), SLA, RTO/RPO, équipes responsables.
 - Codes CMDB automatiques (`APP-0001`…), suppression logique (rien n'est perdu), énumérations typées (`app/Enums`).
 

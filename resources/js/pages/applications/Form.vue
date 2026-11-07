@@ -2,6 +2,7 @@
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { Save } from '@lucide/vue';
 import { computed } from 'vue';
+import ChipToggleGroup from '@/components/cmdb/ChipToggleGroup.vue';
 import FormField from '@/components/cmdb/FormField.vue';
 import NativeSelect from '@/components/cmdb/NativeSelect.vue';
 import PageHeader from '@/components/cmdb/PageHeader.vue';
@@ -57,7 +58,9 @@ const form = useForm({
     criticality: str(initial.criticality),
     data_classification: str(initial.data_classification),
     handles_personal_data: Boolean(initial.handles_personal_data),
-    business_domain_id: str(initial.business_domain_id),
+    business_domain_ids: ((initial.business_domain_ids as number[]) ?? []).map(
+        Number,
+    ),
     vendor_id: str(initial.vendor_id),
     business_owner_team_id: str(initial.business_owner_team_id),
     technical_owner_team_id: str(initial.technical_owner_team_id),
@@ -92,6 +95,12 @@ function toggleTech(id: number, checked: boolean | 'indeterminate') {
             ? [...form.technology_ids, id]
             : form.technology_ids.filter((t) => t !== id);
 }
+
+// Les erreurs arrivent sur business_domain_ids.0, business_domain_ids.1…
+const domainError = () =>
+    Object.entries(form.errors).find(([k]) =>
+        k.startsWith('business_domain_ids'),
+    )?.[1];
 
 function submit() {
     if (props.application) {
@@ -174,14 +183,16 @@ function submit() {
                             />
                         </FormField>
                         <FormField
-                            label="Domaine métier"
-                            for="domain"
-                            :error="form.errors.business_domain_id"
+                            label="Domaines métier (directions utilisatrices)"
+                            :error="domainError()"
+                            hint="Une application peut servir plusieurs directions : sélectionnez-les toutes."
+                            class="sm:col-span-2"
                         >
-                            <NativeSelect
-                                id="domain"
-                                v-model="form.business_domain_id"
+                            <ChipToggleGroup
+                                v-model="form.business_domain_ids"
                                 :options="options.businessDomains"
+                                label="Domaines métier"
+                                empty="Aucun domaine : ajoutez-en dans Référentiels → Domaines métier."
                             />
                         </FormField>
                         <FormField

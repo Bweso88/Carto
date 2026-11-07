@@ -193,7 +193,6 @@ final class KerberosImporter
                 'name' => $name,
                 'type' => $this->applicationType($row->appser ?? null),
                 'vendor_id' => $this->vendorId($row->vendor_label),
-                'business_domain_id' => $this->domainId($row->domain_label),
                 'user_base' => $this->clean($row->utilisateur ?? null),
                 'description' => $app->description ?? $description,
             ])->save();
@@ -204,6 +203,9 @@ final class KerberosImporter
                 $this->technologyId(TechnologyCategory::Language, $row->language_label),
             ]);
             $app->technologies()->syncWithoutDetaching($technologies);
+            if ($domainId = $this->domainId($row->domain_label)) {
+                $app->businessDomains()->syncWithoutDetaching([$domainId]);
+            }
 
             if ($row->serveur !== null) {
                 $serverId = $this->serverIds[(int) $row->serveur] ?? null;

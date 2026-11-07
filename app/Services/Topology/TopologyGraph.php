@@ -32,7 +32,7 @@ final class TopologyGraph
 
         $apps = Application::query()
             ->with('technologies')
-            ->when($options['domain'] ?? null, fn ($q, $d) => $q->where('business_domain_id', $d))
+            ->when($options['domain'] ?? null, fn ($q, $d) => $q->whereRelation('businessDomains', 'business_domains.id', $d))
             ->get()->keyBy('id');
 
         if ($focus = $options['focus'] ?? null) {

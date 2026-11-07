@@ -142,7 +142,7 @@ class KerberosImportTest extends TestCase
 
         $erp = Application::where('kerberos_id', 1)->firstOrFail();
         $this->assertSame('SAP', $erp->vendor->name);
-        $this->assertSame('Finance', $erp->businessDomain->name);
+        $this->assertSame(['Finance'], $erp->businessDomains->pluck('name')->all());
         $this->assertSame('Tous les services', $erp->user_base);
         $this->assertSame(['Java', 'Oracle'], $erp->technologies->pluck('name')->sort()->values()->all());
         $this->assertSame(['SRV-DB-01'], $erp->servers->pluck('hostname')->all());

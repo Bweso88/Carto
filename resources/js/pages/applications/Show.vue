@@ -263,9 +263,18 @@ const minutes = (m: number | null) =>
             <div class="flex flex-col gap-4">
                 <Panel title="Gouvernance" body-class="py-1">
                     <dl>
-                        <DataItem label="Domaine">{{
-                            app.business_domain?.name
-                        }}</DataItem>
+                        <DataItem label="Domaines"
+                            ><span
+                                v-if="app.business_domains?.length"
+                                class="inline-flex flex-wrap justify-end gap-1"
+                                ><ToneBadge
+                                    v-for="d in app.business_domains"
+                                    :key="d.id"
+                                    tone="neutral"
+                                    >{{ d.name }}</ToneBadge
+                                ></span
+                            ></DataItem
+                        >
                         <DataItem label="Éditeur">{{
                             app.vendor?.name
                         }}</DataItem>

@@ -26,13 +26,18 @@ type Filters = {
     criticality?: string | null;
     environment?: string | null;
     site?: string | null;
+    domain?: string | null;
     sort?: string | null;
 };
 
 const props = defineProps<{
     servers: Paginated<Server>;
     filters: Filters;
-    options: EnumOptions & { environments: Option[]; sites: Option[] };
+    options: EnumOptions & {
+        environments: Option[];
+        sites: Option[];
+        businessDomains: Option[];
+    };
 }>();
 
 const canEdit = computed(() => usePage().props.auth.can.editCmdb);
@@ -43,6 +48,7 @@ const { filters, reset, active } = useListFilters(servers.index().url, {
     criticality: null,
     environment: null,
     site: null,
+    domain: null,
     sort: null,
     ...props.filters,
 } as Filters);
@@ -130,6 +136,13 @@ const exportUrl = computed(
                 placeholder="Tous les sites"
                 class="w-44"
                 aria-label="Site"
+            />
+            <NativeSelect
+                v-model="filters.domain"
+                :options="options.businessDomains"
+                placeholder="Tous les domaines"
+                class="w-48"
+                aria-label="Domaine métier servi"
             />
             <Button v-if="active()" variant="ghost" size="sm" @click="reset"
                 ><X /> Réinitialiser</Button

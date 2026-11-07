@@ -30,8 +30,10 @@ const props = defineProps<{
         role: EnumValue;
         environment: { code: string; name: string } | null;
         application: { id: number; code: string; name: string };
+        domains: string[];
         criticality: EnumValue;
     }[];
+    domains: { id: number; name: string }[];
 }>();
 
 defineOptions({
@@ -133,6 +135,17 @@ const date = (d: string | null) =>
                                             · {{ d.environment.code }}</template
                                         >
                                     </div>
+                                    <div
+                                        v-if="d.domains.length"
+                                        class="mt-1 flex flex-wrap gap-1"
+                                    >
+                                        <ToneBadge
+                                            v-for="name in d.domains"
+                                            :key="name"
+                                            tone="neutral"
+                                            >{{ name }}</ToneBadge
+                                        >
+                                    </div>
                                 </div>
                             </div>
                             <EnumBadge :value="d.criticality" />
@@ -195,6 +208,28 @@ const date = (d: string | null) =>
             </div>
 
             <div class="flex flex-col gap-4">
+                <Panel
+                    title="Domaines servis"
+                    description="Directions qui dépendent de ce serveur, via ses applications"
+                    body-class="p-3"
+                >
+                    <div v-if="domains.length" class="flex flex-wrap gap-1.5">
+                        <Link
+                            v-for="d in domains"
+                            :key="d.id"
+                            :href="servers.index({ query: { domain: d.id } })"
+                            :title="`Tous les serveurs du domaine ${d.name}`"
+                        >
+                            <ToneBadge tone="info" class="hover:opacity-80">{{
+                                d.name
+                            }}</ToneBadge>
+                        </Link>
+                    </div>
+                    <p v-else class="text-sm text-muted-foreground">
+                        Aucune application rattachée à un domaine.
+                    </p>
+                </Panel>
+
                 <Panel title="Identification" body-class="py-1">
                     <dl>
                         <DataItem label="Adresses IP" mono>

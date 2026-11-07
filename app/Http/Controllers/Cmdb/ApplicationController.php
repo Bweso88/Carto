@@ -24,7 +24,7 @@ class ApplicationController extends Controller
     public function index(Request $request): Response
     {
         $applications = $this->filteredQuery($request)
-            ->with(['businessDomain', 'technicalOwner'])
+            ->with(['businessDomains', 'technicalOwner'])
             ->withCount(['deployments', 'outgoingFlows', 'incomingFlows'])
             ->paginate(25)
             ->withQueryString()
@@ -44,17 +44,17 @@ class ApplicationController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $rows = $this->filteredQuery($request)
-            ->with(['businessDomain', 'vendor', 'technicalOwner', 'businessOwner', 'technologies', 'servers'])
+            ->with(['businessDomains', 'vendor', 'technicalOwner', 'businessOwner', 'technologies', 'servers'])
             ->lazy()
             ->map(fn (Application $a) => [
                 $a->code, $a->name, $a->type->label(), $a->lifecycle_status->label(), $a->criticality?->label(),
-                $a->businessDomain?->name, $a->vendor?->name, $a->businessOwner?->name, $a->technicalOwner?->name,
+                $a->businessDomains->pluck('name')->implode(', '), $a->vendor?->name, $a->businessOwner?->name, $a->technicalOwner?->name,
                 $a->servers->pluck('hostname')->unique()->implode(' '), $a->technologies->map->label()->implode(', '),
                 $a->sla_target, $a->handles_personal_data ? 'Oui' : 'Non', $a->user_base, $a->description,
             ]);
 
         return Csv::download('applications_'.now()->format('Ymd_His').'.csv',
-            ['Code', 'Application', 'Type', 'Cycle de vie', 'Criticité', 'Domaine', 'Éditeur', 'Resp. métier', 'Resp. technique',
+            ['Code', 'Application', 'Type', 'Cycle de vie', 'Criticité', 'Domaines métier', 'Éditeur', 'Resp. métier', 'Resp. technique',
                 'Serveurs', 'Technologies', 'SLA (%)', 'Données personnelles', 'Utilisateurs', 'Description'],
             $rows);
     }
@@ -63,7 +63,7 @@ class ApplicationController extends Controller
     {
         return Inertia::render('applications/Form', [
             'application' => null,
-            'values' => ['type' => 'business', 'lifecycle_status' => 'production', 'handles_personal_data' => false, 'technology_ids' => []],
+            'values' => ['type' => 'business', 'lifecycle_status' => 'production', 'handles_personal_data' => false, 'technology_ids' => [], 'business_domain_ids' => []],
             'options' => $this->formOptions(),
         ]);
     }
@@ -71,8 +71,9 @@ class ApplicationController extends Controller
     public function store(ApplicationRequest $request): RedirectResponse
     {
         $application = DB::transaction(function () use ($request) {
-            $application = Application::create($request->safe()->except('technology_ids'));
+            $application = Application::create($request->safe()->except(['technology_ids', 'business_domain_ids']));
             $application->technologies()->sync($request->validated('technology_ids', []));
+            $application->businessDomains()->sync($request->validated('business_domain_ids', []));
 
             return $application;
         });
@@ -85,7 +86,7 @@ class ApplicationController extends Controller
     public function show(Application $application): Response
     {
         $application->load([
-            'businessDomain', 'vendor', 'businessOwner', 'technicalOwner', 'technologies',
+            'businessDomains', 'vendor', 'businessOwner', 'technicalOwner', 'technologies',
             'deployments' => fn ($q) => $q->with(['server.primaryIp', 'server.os', 'environment']),
             'outgoingFlows.target', 'incomingFlows.source',
         ]);
@@ -109,7 +110,7 @@ class ApplicationController extends Controller
             'application' => ['id' => $application->id, 'code' => $application->code, 'name' => $application->name],
             'values' => [
                 ...$application->only([
-                    'name', 'description', 'handles_personal_data', 'business_domain_id', 'vendor_id',
+                    'name', 'description', 'handles_personal_data', 'vendor_id',
                     'business_owner_team_id', 'technical_owner_team_id', 'user_base', 'user_count',
                     'rto_minutes', 'rpo_minutes', 'documentation_url',
                 ]),
@@ -119,6 +120,7 @@ class ApplicationController extends Controller
                 'data_classification' => $application->data_classification?->value,
                 'sla_target' => $application->sla_target !== null ? (float) $application->sla_target : null,
                 'technology_ids' => $application->technologies()->pluck('technologies.id')->all(),
+                'business_domain_ids' => $application->businessDomains()->pluck('business_domains.id')->all(),
             ],
             'options' => $this->formOptions(),
         ]);
@@ -127,8 +129,9 @@ class ApplicationController extends Controller
     public function update(ApplicationRequest $request, Application $application): RedirectResponse
     {
         DB::transaction(function () use ($request, $application) {
-            $application->update($request->safe()->except('technology_ids'));
+            $application->update($request->safe()->except(['technology_ids', 'business_domain_ids']));
             $application->technologies()->sync($request->validated('technology_ids', []));
+            $application->businessDomains()->sync($request->validated('business_domain_ids', []));
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => "Application {$application->name} mise à jour."]);
@@ -164,7 +167,7 @@ class ApplicationController extends Controller
             ->when($f['type'] ?? null, fn ($q, $v) => $q->where('type', $v))
             ->when($f['lifecycle'] ?? null, fn ($q, $v) => $q->where('lifecycle_status', $v))
             ->when($f['criticality'] ?? null, fn ($q, $v) => $v === 'none' ? $q->whereNull('criticality') : $q->where('criticality', $v))
-            ->when($f['domain'] ?? null, fn ($q, $v) => $q->where('business_domain_id', $v))
+            ->when($f['domain'] ?? null, fn ($q, $v) => $q->whereRelation('businessDomains', 'business_domains.id', $v))
             ->when($f['team'] ?? null, fn ($q, $v) => $q->where(fn ($q) => $q->where('technical_owner_team_id', $v)->orWhere('business_owner_team_id', $v)))
             ->orderBy($column, str_starts_with($sort, '-') ? 'desc' : 'asc')
             ->orderBy('id');

@@ -35,7 +35,7 @@ class ApplicationResource extends JsonResource
             'criticality' => EnumValue::of($this->criticality),
             'data_classification' => EnumValue::of($this->data_classification),
             'handles_personal_data' => $this->handles_personal_data,
-            'business_domain' => $this->whenLoaded('businessDomain', fn () => $this->businessDomain?->only('id', 'name')),
+            'business_domains' => $this->whenLoaded('businessDomains', fn () => $this->businessDomains->map->only('id', 'name')->values()),
             'vendor' => $this->whenLoaded('vendor', fn () => $this->vendor?->only('id', 'name')),
             'business_owner' => $this->whenLoaded('businessOwner', fn () => $this->businessOwner?->only('id', 'name', 'lead_name', 'email')),
             'technical_owner' => $this->whenLoaded('technicalOwner', fn () => $this->technicalOwner?->only('id', 'name', 'lead_name', 'email', 'on_call_phone')),

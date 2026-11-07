@@ -26,7 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable([
     'code', 'name', 'description', 'type', 'lifecycle_status', 'criticality',
     'data_classification', 'handles_personal_data',
-    'business_domain_id', 'vendor_id', 'business_owner_team_id', 'technical_owner_team_id',
+    'vendor_id', 'business_owner_team_id', 'technical_owner_team_id',
     'user_base', 'user_count', 'sla_target', 'rto_minutes', 'rpo_minutes',
     'documentation_url', 'kerberos_id',
 ])]
@@ -73,10 +73,14 @@ class Application extends Model
             ->orWhereLike('description', $like));
     }
 
-    /** @return BelongsTo<BusinessDomain, $this> */
-    public function businessDomain(): BelongsTo
+    /**
+     * Domaines métier (directions) qui utilisent l'application : un ou plusieurs.
+     *
+     * @return BelongsToMany<BusinessDomain, $this>
+     */
+    public function businessDomains(): BelongsToMany
     {
-        return $this->belongsTo(BusinessDomain::class);
+        return $this->belongsToMany(BusinessDomain::class)->orderBy('business_domains.name');
     }
 
     /** @return BelongsTo<Vendor, $this> */

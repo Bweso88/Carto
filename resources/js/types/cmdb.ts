@@ -112,7 +112,7 @@ export type Application = {
     criticality: EnumValue;
     data_classification: EnumValue;
     handles_personal_data: boolean;
-    business_domain?: { id: number; name: string } | null;
+    business_domains?: { id: number; name: string }[];
     vendor?: { id: number; name: string } | null;
     business_owner?: Team | null;
     technical_owner?: Team | null;
