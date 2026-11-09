@@ -87,10 +87,10 @@ class KerberosImportTest extends TestCase
         $db->table('langage')->insert([['langage' => 'Java'], ['langage' => 'PHP']]);
 
         $db->table('serveur')->insert([
-            ['id_serveur' => 1, 'serveur' => 'srv-veeam', 'ip' => '10.10.1.136', 'os' => "'WS", 'type' => 2, 'comment' => 'Serveur Cluster VMWARE', 'local' => 'Site primaire', 'criticité' => 2],
-            ['id_serveur' => 2, 'serveur' => 'sb4web2', 'ip' => '10.10.0.39', 'os' => "'WS", 'type' => 2, 'comment' => 'Hyperviseur: sb4host2', 'local' => 'Site primaire', 'criticité' => 1],
+            ['id_serveur' => 1, 'serveur' => 'srv-backup', 'ip' => '10.99.1.10', 'os' => "'WS", 'type' => 2, 'comment' => 'Serveur Cluster VMWARE', 'local' => 'Site primaire', 'criticité' => 2],
+            ['id_serveur' => 2, 'serveur' => 'web-02', 'ip' => '10.99.0.20', 'os' => "'WS", 'type' => 2, 'comment' => 'Hyperviseur: hyperviseur-02', 'local' => 'Site primaire', 'criticité' => 1],
             ['id_serveur' => 3, 'serveur' => 'SRV-DB-01', 'ip' => '192.168.1.30, 192.168.1.31', 'os' => 'Red Hat Enterprise Linux 8', 'type' => 1, 'comment' => null, 'local' => 'Datacenter B', 'criticité' => null],
-            ['id_serveur' => 4, 'serveur' => 'srv-veeam', 'ip' => 'à définir', 'os' => '', 'type' => null, 'comment' => null, 'local' => '', 'criticité' => null],
+            ['id_serveur' => 4, 'serveur' => 'srv-backup', 'ip' => 'à définir', 'os' => '', 'type' => null, 'comment' => null, 'local' => '', 'criticité' => null],
         ]);
         $db->table('application')->insert([
             ['id_ap' => 1, 'app' => 'ERP Principal', 'serveur' => 3, 'editeur' => 1, 'dependance' => 1, 'interaction' => null, 'activite' => 1, 'bdd' => 1, 'langage' => 1, 'utilisateur' => 'Tous les services', 'appser' => 'Application'],
@@ -109,20 +109,20 @@ class KerberosImportTest extends TestCase
     {
         $this->artisan('kerberos:import')->assertSuccessful();
 
-        $veeam = Server::where('kerberos_id', 1)->firstOrFail();
-        $this->assertSame(ServerKind::Virtual, $veeam->kind);
-        $this->assertSame(Criticality::Critical, $veeam->criticality);
-        $this->assertSame('Windows Server', $veeam->os->name, "« 'WS » : apostrophe retirée et abréviation comprise");
-        $this->assertSame('Site primaire', $veeam->site->name);
-        $this->assertSame('PROD', $veeam->environment->code);
-        $this->assertSame('10.10.1.136', $veeam->primaryIp->address);
+        $backup = Server::where('kerberos_id', 1)->firstOrFail();
+        $this->assertSame(ServerKind::Virtual, $backup->kind);
+        $this->assertSame(Criticality::Critical, $backup->criticality);
+        $this->assertSame('Windows Server', $backup->os->name, "« 'WS » : apostrophe retirée et abréviation comprise");
+        $this->assertSame('Site primaire', $backup->site->name);
+        $this->assertSame('PROD', $backup->environment->code);
+        $this->assertSame('10.99.1.10', $backup->primaryIp->address);
 
         $db = Server::where('kerberos_id', 3)->firstOrFail();
         $this->assertSame(ServerKind::Physical, $db->kind);
         $this->assertSame(2, $db->ipAddresses()->count(), 'Plusieurs IP dans un même champ sont séparées');
         $this->assertSame('Red Hat Enterprise Linux 8', $db->os->label(), 'Le catalogue existant est réutilisé');
 
-        $this->assertSame('srv-veeam-k4', Server::where('kerberos_id', 4)->value('hostname'), 'Les doublons de nom sont renommés');
+        $this->assertSame('srv-backup-k4', Server::where('kerberos_id', 4)->value('hostname'), 'Les doublons de nom sont renommés');
         $this->assertSame(0, Server::where('kerberos_id', 4)->first()->ipAddresses()->count(), 'Les IP invalides sont ignorées');
     }
 
@@ -130,9 +130,9 @@ class KerberosImportTest extends TestCase
     {
         $this->artisan('kerberos:import')->assertSuccessful();
 
-        $vm = Server::where('hostname', 'sb4web2')->firstOrFail();
+        $vm = Server::where('hostname', 'web-02')->firstOrFail();
         $this->assertNotNull($vm->host);
-        $this->assertSame('sb4host2', $vm->host->hostname);
+        $this->assertSame('hyperviseur-02', $vm->host->hostname);
         $this->assertSame(ServerKind::Physical, $vm->host->kind);
     }
 

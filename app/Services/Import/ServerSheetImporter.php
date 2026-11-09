@@ -102,7 +102,7 @@ final class ServerSheetImporter
                 $env = $environments->first(fn ($e) => Normalize::key($e->code) === Normalize::key($label) || Normalize::key($e->name) === Normalize::key($label));
                 $env ? $envCode = $env->code : $warnings[] = "Environnement « {$label} » inconnu : environnement par défaut.";
             } elseif (preg_match('/test|recette|preprod|(^|[-_.])dev([-_.]|\d|$)/i', $hostname, $m)) {
-                // Nom évocateur d'un serveur hors production (ex. « mucagirrh-test »)
+                // Nom évocateur d'un serveur hors production (ex. « paie-test »)
                 $guess = match (true) {
                     stripos($m[0], 'preprod') !== false => 'PREPROD',
                     stripos($m[0], 'dev') !== false => 'DEV',

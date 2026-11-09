@@ -123,7 +123,7 @@ final class KerberosImporter
     }
 
     /**
-     * Kerberos note l'hyperviseur dans le commentaire (« Hyperviseur: sb4host2 ») :
+     * Kerberos note l'hyperviseur dans le commentaire (« Hyperviseur: hyperviseur-02 ») :
      * on en fait un vrai lien VM -> hôte, en créant l'hôte s'il n'existe pas.
      */
     private function linkHypervisors(): void

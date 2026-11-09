@@ -147,7 +147,7 @@ const ipError = () =>
                                 v-model="form.ip_addresses_text"
                                 :rows="4"
                                 class="font-mono"
-                                placeholder="10.10.1.20"
+                                placeholder="10.99.1.20"
                             />
                         </FormField>
                         <FormField

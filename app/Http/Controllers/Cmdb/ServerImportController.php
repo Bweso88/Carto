@@ -101,8 +101,8 @@ class ServerImportController extends Controller
         return Csv::download('modele_import_serveurs.csv',
             ['Serveur', 'IP', 'OS', 'Type', 'Localisation', 'Criticité', 'Environnement', 'Hôte', 'Description'],
             [
-                ['srv-exemple-01', '10.10.0.10', 'WS 2022', 'Virtuel', 'Site primaire', 'Critique', 'PROD', 'hyperviseur-01', 'Serveur applicatif ERP'],
-                ['hyperviseur-01', '10.10.0.2', 'Linux Rhel9', 'Physique', 'Site primaire', 'À surveiller', 'PROD', '', ''],
+                ['srv-exemple-01', '10.99.0.10', 'WS 2022', 'Virtuel', 'Site primaire', 'Critique', 'PROD', 'hyperviseur-01', 'Serveur applicatif ERP'],
+                ['hyperviseur-01', '10.99.0.2', 'Linux Rhel9', 'Physique', 'Site primaire', 'À surveiller', 'PROD', '', ''],
             ]);
     }
 }

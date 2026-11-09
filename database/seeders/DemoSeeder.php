@@ -57,19 +57,19 @@ class DemoSeeder extends Seeder
             return $s;
         };
 
-        $hv1 = $server('esx-par-01', Kind::Physical, ['ip' => '10.10.0.11', 'manufacturer_id' => $dell, 'model' => 'PowerEdge R760', 'cpu_cores' => 64, 'ram_gb' => 768, 'criticality' => Crit::Critical, 'owner_team_id' => $sre->id]);
-        $hv2 = $server('esx-par-02', Kind::Physical, ['ip' => '10.10.0.12', 'manufacturer_id' => $dell, 'model' => 'PowerEdge R760', 'cpu_cores' => 64, 'ram_gb' => 768, 'criticality' => Crit::Critical, 'owner_team_id' => $sre->id]);
-        $hvLyon = $server('esx-lys-01', Kind::Physical, ['ip' => '10.20.0.11', 'site_id' => $dc2->id, 'manufacturer_id' => $dell, 'criticality' => Crit::High]);
+        $hv1 = $server('esx-par-01', Kind::Physical, ['ip' => '10.99.0.11', 'manufacturer_id' => $dell, 'model' => 'PowerEdge R760', 'cpu_cores' => 64, 'ram_gb' => 768, 'criticality' => Crit::Critical, 'owner_team_id' => $sre->id]);
+        $hv2 = $server('esx-par-02', Kind::Physical, ['ip' => '10.99.0.12', 'manufacturer_id' => $dell, 'model' => 'PowerEdge R760', 'cpu_cores' => 64, 'ram_gb' => 768, 'criticality' => Crit::Critical, 'owner_team_id' => $sre->id]);
+        $hvLyon = $server('esx-lys-01', Kind::Physical, ['ip' => '10.97.0.11', 'site_id' => $dc2->id, 'manufacturer_id' => $dell, 'criticality' => Crit::High]);
 
-        $web1 = $server('srv-web-01', Kind::Virtual, ['ip' => '10.10.1.21', 'host_id' => $hv1->id, 'os_id' => $os('Ubuntu', '22.04 LTS')]);
-        $web2 = $server('srv-web-02', Kind::Virtual, ['ip' => '10.10.1.22', 'host_id' => $hv2->id, 'os_id' => $os('Ubuntu', '22.04 LTS')]);
-        $app1 = $server('srv-app-prod-04', Kind::Virtual, ['ip' => '10.10.1.84', 'host_id' => $hv1->id, 'os_id' => $os('Red Hat Enterprise Linux', '9'), 'criticality' => Crit::Critical]);
-        $db1 = $server('srv-db-primary-01', Kind::Virtual, ['ip' => '10.10.2.10', 'host_id' => $hv1->id, 'os_id' => $os('Debian', '12 Bookworm'), 'criticality' => Crit::Critical, 'owner_team_id' => $dba->id]);
-        $db2 = $server('srv-db-replica-01', Kind::Virtual, ['ip' => '10.20.2.10', 'host_id' => $hvLyon->id, 'site_id' => $dc2->id, 'os_id' => $os('Debian', '12 Bookworm'), 'owner_team_id' => $dba->id]);
-        $erp = $server('srv-erp-sap-01', Kind::Virtual, ['ip' => '10.10.3.10', 'host_id' => $hv2->id, 'os_id' => $os('Red Hat Enterprise Linux', '8'), 'criticality' => Crit::Critical]);
-        $adServer = $server('srv-ad-01', Kind::Virtual, ['ip' => '10.10.0.50', 'host_id' => $hv2->id, 'os_id' => $os('Windows Server', '2022'), 'criticality' => Crit::Critical, 'owner_team_id' => $secops->id]);
-        $legacy = $server('srv-legacy-backoffice-02', Kind::Virtual, ['ip' => '10.14.88.24', 'host_id' => $hv2->id, 'os_id' => $os('Debian', '9 Stretch'), 'description' => 'Back-office historique — migration prévue']);
-        $mysql = $server('srv-mysql-03', Kind::Virtual, ['ip' => '10.14.92.102', 'host_id' => $hv2->id, 'os_id' => $os('Windows Server', '2012 R2')]);
+        $web1 = $server('srv-web-01', Kind::Virtual, ['ip' => '10.99.1.21', 'host_id' => $hv1->id, 'os_id' => $os('Ubuntu', '22.04 LTS')]);
+        $web2 = $server('srv-web-02', Kind::Virtual, ['ip' => '10.99.1.22', 'host_id' => $hv2->id, 'os_id' => $os('Ubuntu', '22.04 LTS')]);
+        $app1 = $server('srv-app-prod-04', Kind::Virtual, ['ip' => '10.99.1.84', 'host_id' => $hv1->id, 'os_id' => $os('Red Hat Enterprise Linux', '9'), 'criticality' => Crit::Critical]);
+        $db1 = $server('srv-db-primary-01', Kind::Virtual, ['ip' => '10.99.2.10', 'host_id' => $hv1->id, 'os_id' => $os('Debian', '12 Bookworm'), 'criticality' => Crit::Critical, 'owner_team_id' => $dba->id]);
+        $db2 = $server('srv-db-replica-01', Kind::Virtual, ['ip' => '10.97.2.10', 'host_id' => $hvLyon->id, 'site_id' => $dc2->id, 'os_id' => $os('Debian', '12 Bookworm'), 'owner_team_id' => $dba->id]);
+        $erp = $server('srv-erp-sap-01', Kind::Virtual, ['ip' => '10.99.3.10', 'host_id' => $hv2->id, 'os_id' => $os('Red Hat Enterprise Linux', '8'), 'criticality' => Crit::Critical]);
+        $adServer = $server('srv-ad-01', Kind::Virtual, ['ip' => '10.99.0.50', 'host_id' => $hv2->id, 'os_id' => $os('Windows Server', '2022'), 'criticality' => Crit::Critical, 'owner_team_id' => $secops->id]);
+        $legacy = $server('srv-legacy-backoffice-02', Kind::Virtual, ['ip' => '10.98.88.24', 'host_id' => $hv2->id, 'os_id' => $os('Debian', '9 Stretch'), 'description' => 'Back-office historique — migration prévue']);
+        $mysql = $server('srv-mysql-03', Kind::Virtual, ['ip' => '10.98.92.102', 'host_id' => $hv2->id, 'os_id' => $os('Windows Server', '2012 R2')]);
 
         // --- Domaines métier ---
         $commerce = BusinessDomain::firstOrCreate(['name' => 'E-commerce'])->id;
