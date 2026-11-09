@@ -7,6 +7,7 @@ use App\Http\Controllers\Cmdb\DeploymentController;
 use App\Http\Controllers\Cmdb\ImpactController;
 use App\Http\Controllers\Cmdb\ReferenceController;
 use App\Http\Controllers\Cmdb\ServerController;
+use App\Http\Controllers\Cmdb\ServerImportController;
 use App\Http\Controllers\Cmdb\TopologyController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Écriture : contributeurs et administrateurs
     Route::middleware('can:edit-cmdb')->group(function () {
+        // Import Excel / CSV (avant servers/{server} pour ne pas être capturé par la fiche)
+        Route::get('servers/import', [ServerImportController::class, 'create'])->name('servers.import');
+        Route::post('servers/import/preview', [ServerImportController::class, 'preview'])->name('servers.import.preview');
+        Route::post('servers/import', [ServerImportController::class, 'store'])->name('servers.import.store');
+        Route::delete('servers/import', [ServerImportController::class, 'destroy'])->name('servers.import.cancel');
+        Route::get('servers/import/template', [ServerImportController::class, 'template'])->name('servers.import.template');
+
         Route::resource('servers', ServerController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
         Route::resource('applications', ApplicationController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
 

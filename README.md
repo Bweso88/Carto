@@ -82,6 +82,20 @@ Ce que fait l'import :
   et l'avertissement indique les comptes à réinitialiser.
 - Kerberos n'a pas d'e-mail : les comptes reçoivent `identifiant@kerberos.invalid`, à corriger ensuite.
 
+## Importer des serveurs depuis Excel
+
+Menu **Serveurs → Importer** (contributeurs et administrateurs) : déposer un fichier `.xlsx` ou `.csv`,
+vérifier l'aperçu (créations, mises à jour, avertissements), puis confirmer. Rien n'est écrit avant la confirmation.
+
+- En-têtes reconnus (ordre libre) : `Serveur` (obligatoire), `IP`, `OS`, `Type`, `Localisation`/`Site`,
+  `Criticité`, `Environnement`, `Hôte`/`Hyperviseur`, `Description`/`Commentaire`. Un modèle est téléchargeable.
+- Valeurs interprétées : « WS 2012 R2 » → Windows Server 2012 R2 (avec sa date de fin de vie),
+  « Linux Rhel9 » → Red Hat Enterprise Linux 9, « Critique » → Tier 1, « À surveiller » → Tier 2,
+  « Non défini » → criticité non évaluée ; un nom contenant « test » est classé en Recette.
+- Un serveur déjà connu (même nom, majuscules ignorées) est complété ; une cellule vide n'efface jamais
+  une valeur existante. Relancer le même fichier ne crée aucun doublon.
+- En ligne de commande : `php artisan merimap:import-servers fichier.xlsx --dry-run`
+
 ## Modèle de données
 
 ```mermaid

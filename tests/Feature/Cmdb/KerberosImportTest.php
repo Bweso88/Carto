@@ -112,7 +112,7 @@ class KerberosImportTest extends TestCase
         $veeam = Server::where('kerberos_id', 1)->firstOrFail();
         $this->assertSame(ServerKind::Virtual, $veeam->kind);
         $this->assertSame(Criticality::Critical, $veeam->criticality);
-        $this->assertSame('WS', $veeam->os->name, "L'apostrophe parasite de Kerberos est retirée");
+        $this->assertSame('Windows Server', $veeam->os->name, "« 'WS » : apostrophe retirée et abréviation comprise");
         $this->assertSame('Site primaire', $veeam->site->name);
         $this->assertSame('PROD', $veeam->environment->code);
         $this->assertSame('10.10.1.136', $veeam->primaryIp->address);

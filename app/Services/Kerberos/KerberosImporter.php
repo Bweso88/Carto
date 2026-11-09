@@ -18,6 +18,7 @@ use App\Models\Site;
 use App\Models\Technology;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Support\TechnologyResolver;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -360,7 +361,8 @@ final class KerberosImporter
 
     private function osId(?string $label): ?int
     {
-        return $this->technologyId(TechnologyCategory::OperatingSystem, $label);
+        // « WS 2012 R2 » -> Windows Server 2012 R2, « Linux Rhel9 » -> Red Hat Enterprise Linux 9…
+        return TechnologyResolver::operatingSystem($this->clean($label))?->id;
     }
 
     private function technologyId(TechnologyCategory $category, ?string $label): ?int
