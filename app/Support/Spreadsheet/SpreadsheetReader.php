@@ -2,12 +2,17 @@
 
 namespace App\Support\Spreadsheet;
 
+use App\Support\Normalize;
+use DOMDocument;
+use DOMElement;
+use DOMXPath;
 use RuntimeException;
 use SimpleXMLElement;
 use ZipArchive;
 
 /**
- * Lecture simple de tableaux Excel (.xlsx) et CSV, sans dépendance externe.
+ * Lecture simple de tableaux Excel (.xlsx), CSV et « faux .xls » (tableau HTML, format des
+ * exports de nombreuses applications web, dont Kerberos), sans dépendance externe.
  * Renvoie les lignes non vides de la première feuille, chaque cellule en texte (ou null).
  */
 final class SpreadsheetReader
@@ -20,11 +25,19 @@ final class SpreadsheetReader
     public static function read(string $path, ?string $originalName = null): array
     {
         $extension = strtolower(pathinfo($originalName ?? $path, PATHINFO_EXTENSION));
+        $head = (string) file_get_contents($path, length: 2048);
+
+        if (str_starts_with($head, "\xD0\xCF\x11\xE0")) {
+            throw new RuntimeException('Ancien format Excel 97-2003 (.xls) : ouvrez le fichier dans Excel et enregistrez-le au format .xlsx.');
+        }
+        if (in_array($extension, ['xls', 'htm', 'html'], true) || preg_match('/^\s*(\xEF\xBB\xBF)?\s*<(!doctype|html|table|\?xml)/i', $head)) {
+            return self::readHtml($path);
+        }
 
         return match ($extension) {
             'xlsx' => self::readXlsx($path),
             'csv', 'txt' => self::readCsv($path),
-            default => throw new RuntimeException('Format non pris en charge : utilisez un fichier Excel (.xlsx) ou CSV.'),
+            default => throw new RuntimeException('Format non pris en charge : utilisez un fichier Excel (.xlsx ou .xls) ou CSV.'),
         };
     }
 
@@ -88,6 +101,48 @@ final class SpreadsheetReader
             $rows[] = self::normalizeRow($line);
         }
         fclose($stream);
+
+        return self::withoutEmptyRows($rows);
+    }
+
+    /**
+     * Tableau HTML enregistré avec l'extension .xls (Excel l'ouvre comme un classeur).
+     *
+     * @return list<list<string|null>>
+     */
+    private static function readHtml(string $path): array
+    {
+        $content = (string) file_get_contents($path);
+        $content = preg_replace('/^\xEF\xBB\xBF/', '', $content);
+        if (! mb_check_encoding($content, 'UTF-8')) {
+            $content = mb_convert_encoding($content, 'UTF-8', 'Windows-1252');
+        }
+        if (stripos($content, '<table') === false) {
+            throw new RuntimeException('Aucun tableau trouvé dans le fichier : enregistrez-le au format .xlsx depuis Excel.');
+        }
+
+        $dom = new DOMDocument;
+        $previous = libxml_use_internal_errors(true);
+        $dom->loadHTML('<?xml encoding="UTF-8">'.$content, LIBXML_NONET | LIBXML_COMPACT);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+
+        $xpath = new DOMXPath($dom);
+        $table = $xpath->query('//table')->item(0);
+        $rows = [];
+        foreach ($table ? $xpath->query('.//tr', $table) : [] as $tr) {
+            $cells = [];
+            foreach ($tr->childNodes as $cell) {
+                if (! $cell instanceof DOMElement || ! in_array(strtolower($cell->nodeName), ['td', 'th'], true)) {
+                    continue;
+                }
+                $cells[] = preg_replace('/\s+/u', ' ', Normalize::repairEncoding($cell->textContent));
+                for ($i = 1, $span = (int) $cell->getAttribute('colspan'); $i < $span; $i++) {
+                    $cells[] = null;
+                }
+            }
+            $rows[] = self::normalizeRow($cells);
+        }
 
         return self::withoutEmptyRows($rows);
     }
@@ -168,7 +223,7 @@ final class SpreadsheetReader
         }
         $row = [];
         for ($i = 0, $max = max(array_keys($cells)); $i <= $max; $i++) {
-            $v = isset($cells[$i]) ? trim((string) $cells[$i]) : '';
+            $v = isset($cells[$i]) ? trim(Normalize::repairEncoding((string) $cells[$i]), " \t\n\r\0\x0B\u{A0}") : '';
             $row[] = $v === '' ? null : $v;
         }
 

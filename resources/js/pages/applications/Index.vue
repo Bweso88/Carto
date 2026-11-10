@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { AppWindow, Download, Plus, Search, X } from '@lucide/vue';
+import {
+    AppWindow,
+    Download,
+    FileSpreadsheet,
+    Plus,
+    Search,
+    X,
+} from '@lucide/vue';
 import { computed } from 'vue';
 import EmptyState from '@/components/cmdb/EmptyState.vue';
 import EnumBadge from '@/components/cmdb/EnumBadge.vue';
@@ -76,6 +83,11 @@ const exportUrl = computed(
                 <Button variant="outline" size="sm" as="a" :href="exportUrl"
                     ><Download /> Exporter CSV</Button
                 >
+                <Button v-if="canEdit" variant="outline" size="sm" as-child>
+                    <Link :href="applications.import()"
+                        ><FileSpreadsheet /> Importer</Link
+                    >
+                </Button>
                 <Button v-if="canEdit" size="sm" as-child>
                     <Link :href="applications.create()"
                         ><Plus /> Nouvelle application</Link

@@ -43,10 +43,10 @@ class ServerImportController extends Controller
     public function preview(Request $request, ServerSheetImporter $importer): RedirectResponse
     {
         $validated = $request->validate([
-            'file' => ['required', 'file', 'max:5120', 'mimes:xlsx,csv,txt'],
+            'file' => ['required', 'file', 'max:5120', 'extensions:xlsx,xls,csv,txt,htm,html'],
             'environment' => ['required', 'exists:environments,code'],
         ], [
-            'file.mimes' => 'Le fichier doit être un classeur Excel (.xlsx) ou un fichier CSV.',
+            'file.extensions' => 'Le fichier doit être un classeur Excel (.xlsx, .xls) ou un fichier CSV.',
         ], ['file' => 'fichier']);
 
         $file = $validated['file'];

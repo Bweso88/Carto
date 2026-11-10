@@ -197,12 +197,12 @@ function cancel() {
                             choisir</span
                         >
                         <span class="text-xs text-muted-foreground"
-                            >Excel (.xlsx) ou CSV · 5 Mo maximum</span
+                            >Excel (.xlsx, .xls) ou CSV · 5 Mo maximum</span
                         >
                         <input
                             id="file"
                             type="file"
-                            accept=".xlsx,.csv"
+                            accept=".xlsx,.xls,.csv"
                             class="sr-only"
                             @change="pick"
                         />

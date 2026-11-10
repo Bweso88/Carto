@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Cmdb\ApplicationController;
 use App\Http\Controllers\Cmdb\ApplicationFlowController;
+use App\Http\Controllers\Cmdb\ApplicationImportController;
 use App\Http\Controllers\Cmdb\DashboardController;
 use App\Http\Controllers\Cmdb\DeploymentController;
 use App\Http\Controllers\Cmdb\ImpactController;
@@ -29,6 +30,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('servers/import', [ServerImportController::class, 'store'])->name('servers.import.store');
         Route::delete('servers/import', [ServerImportController::class, 'destroy'])->name('servers.import.cancel');
         Route::get('servers/import/template', [ServerImportController::class, 'template'])->name('servers.import.template');
+        Route::get('applications/import', [ApplicationImportController::class, 'create'])->name('applications.import');
+        Route::post('applications/import/preview', [ApplicationImportController::class, 'preview'])->name('applications.import.preview');
+        Route::post('applications/import', [ApplicationImportController::class, 'store'])->name('applications.import.store');
+        Route::delete('applications/import', [ApplicationImportController::class, 'destroy'])->name('applications.import.cancel');
+        Route::get('applications/import/template', [ApplicationImportController::class, 'template'])->name('applications.import.template');
 
         Route::resource('servers', ServerController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);
         Route::resource('applications', ApplicationController::class)->only(['create', 'store', 'edit', 'update', 'destroy']);

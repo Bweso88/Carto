@@ -57,7 +57,16 @@ class ServerImportTest extends TestCase
     public function test_reader_rejects_unknown_formats(): void
     {
         $this->expectExceptionMessage('Format non pris en charge');
-        SpreadsheetReader::read(__FILE__, 'ancien.xls');
+        SpreadsheetReader::read(__FILE__, 'document.docx');
+    }
+
+    public function test_reader_explains_how_to_convert_binary_xls(): void
+    {
+        $path = tempnam(sys_get_temp_dir(), 'xls');
+        file_put_contents($path, "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1".str_repeat("\0", 64));
+
+        $this->expectExceptionMessage('enregistrez-le au format .xlsx');
+        SpreadsheetReader::read($path, 'ancien.xls');
     }
 
     public function test_analysis_interprets_values_without_writing(): void

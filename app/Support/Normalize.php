@@ -12,6 +12,20 @@ use Illuminate\Support\Str;
 final class Normalize
 {
     /** Clé de comparaison : minuscules, sans accents ni ponctuation superflue. */
+    /**
+     * Répare un texte encodé deux fois (« ContrÃ´le » -> « Contrôle »), défaut courant des exports.
+     * Sans effet sur un texte correct.
+     */
+    public static function repairEncoding(string $value): string
+    {
+        if (! preg_match('/[ÃÂ][\x{80}-\x{BF}]/u', $value) || preg_match('/[^\x{00}-\x{FF}]/u', $value)) {
+            return $value;
+        }
+        $repaired = mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
+
+        return mb_check_encoding($repaired, 'UTF-8') ? $repaired : $value;
+    }
+
     public static function key(?string $value): string
     {
         return trim(preg_replace('/[^a-z0-9]+/', ' ', Str::lower(Str::ascii((string) $value))));
