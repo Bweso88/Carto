@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\DeploymentRole;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
@@ -20,6 +21,16 @@ class Deployment extends Pivot
     public $incrementing = true;
 
     protected $attributes = ['role' => 'application'];
+
+    /**
+     * Un déploiement dont le serveur ou l'application est à la corbeille
+     * n'existe plus pour l'interface, la topologie ni l'analyse d'impact.
+     * Il réapparaît si l'élément est restauré.
+     */
+    protected static function booted(): void
+    {
+        static::addGlobalScope('active', fn (Builder $query) => $query->whereHas('server')->whereHas('application'));
+    }
 
     protected function casts(): array
     {

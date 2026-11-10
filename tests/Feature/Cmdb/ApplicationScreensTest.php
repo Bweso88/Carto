@@ -89,6 +89,28 @@ class ApplicationScreensTest extends TestCase
         $this->assertSame(0, $app->deployments()->count());
     }
 
+    public function test_deleted_servers_disappear_from_application_pages(): void
+    {
+        $app = Application::factory()->create();
+        $kept = Server::factory()->create();
+        $removed = Server::factory()->create();
+        $app->deployments()->create(['server_id' => $kept->id]);
+        $app->deployments()->create(['server_id' => $removed->id]);
+
+        $this->actingAs(User::factory()->editor()->create())->delete(route('servers.destroy', $removed))->assertRedirect();
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get(route('applications.show', $app))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('application.deployments', 1)
+                ->where('application.deployments.0.server.id', $kept->id));
+        $this->actingAs($user)->get(route('applications.index'))
+            ->assertInertia(fn (Assert $page) => $page->where('applications.data.0.servers_count', 1));
+
+        $removed->restore();
+        $this->assertSame(2, $app->deployments()->count());
+    }
+
     public function test_flows_can_be_declared_in_both_directions(): void
     {
         [$app, $other] = Application::factory()->count(2)->create();
